@@ -35,8 +35,8 @@ def verify_path_isfile(_path) -> bool:
     return True
 
 def process_smartflux_data(data_dir: str, processed_dir: str, processed_ftype="pkl", \
-                            processed_fname="processed_licor_data", \
-                                raw_fname="raw_licor_data"):
+                            processed_fname="processed_smartflux_data", \
+                                raw_fname="raw_smartflux_data"):
 
     if processed_ftype.lower() not in ['pkl', 'csv', '.pkl', '.csv']:
         print("ERROR:\tprocessed_file_type must be 'csv' or 'pkl'")
@@ -53,8 +53,8 @@ def process_smartflux_data(data_dir: str, processed_dir: str, processed_ftype="p
             if 'csv' in processed_ftype.lower():
                 return pd.read_csv(f"{processed_dir:s}/{processed_fname:s}.csv")
 
-    print("reading processed dataframe...")
     final  = generate_datafile(f'{data_dir:s}/raw', processed_dir, raw_fname)
+    final.reset_index(inplace=True)
 
     print("saving processed dataframe...")
     if 'pkl' in processed_ftype.lower():
@@ -73,9 +73,9 @@ def generate_datafile(raw_data_dir: str, output_data_dir: str, raw_fname: str) -
     # dirs=directories
     counter = 0
     ghg_file_list = glob.glob(f"{raw_data_dir:s}/*.ghg")
+    print("unzipping raw smartflux data...")
     pbar = tqdm(range(len(ghg_file_list)))
     cols = []
-    print("unzipping raw licor data...")
     for i in pbar:
         fname = unix_path(ghg_file_list[i])
         pbar.set_description(f"Processing {fname:s}")
@@ -135,6 +135,7 @@ if __name__ == "__main__":
 
     processed_data = process_smartflux_data(argdict['input_dir'], argdict['output_dir'])
     pd.set_option('display.precision', 2)
-    print(processed_data.columns)
+    print("\nNumber of Samples:", len(processed_data))
+    print("Column Names:", ', '.join([str(c) for c in processed_data.columns]), end="\n\n")
     print(processed_data)
 
