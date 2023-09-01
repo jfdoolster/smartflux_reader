@@ -9,7 +9,7 @@ from helper import unix_path, df2pkl, df2csv
 
 def verify_path_isdir(_path):
     _path = unix_path(_path)
-    if not os.path.isdir(_path):
+    if not os.path.exists(_path):
         print(f"ERROR:\t{_path:s} does not exist")
         sys.exit()
     if not os.path.isdir(_path):
@@ -23,24 +23,46 @@ def verify_path_isdir(_path):
 
     return _path
 
-def process_licor_data(data_dir: str, processed_dir: str, processed_ftype="pkl"):
+def verify_path_isfile(_path) -> bool:
+    _path = unix_path(_path)
+    if not os.path.exists(_path):
+        #print(f"INFO:\t{_path:s} does not exist")
+        return False
+    if not os.path.isfile(_path):
+        #print(f"INFO:\t{_path:s} is not a directory")
+        return False
+    print(f"INFO:\tfound processed data file ({_path:s})")
+    return True
+
+def process_licor_data(data_dir: str, processed_dir: str, processed_ftype="pkl", processed_fname="processed_licor_data", raw_fname="raw_licor_data"):
 
     if processed_ftype.lower() not in ['pkl', 'csv', '.pkl', '.csv']:
         print("ERROR:\tprocessed_file_type must be 'csv' or 'pkl'")
 
-
     verify_path_isdir(data_dir)
 
-    final  = generate_datafile(f'{data_dir:s}/raw', processed_dir)
-    final.info()
+    if verify_path_isfile(f"{processed_dir:s}/{processed_fname:s}.pkl") or \
+        verify_path_isfile(f"{processed_dir:s}/{processed_fname:s}.csv"):
+        res = input("regenerate processed files? [N]/y ")
+        if res.lower() not in ['y', 'yes']:
+            print("reading processed dataframe...")
+            if 'pkl' in processed_ftype.lower():
+                return pd.read_pickle(f"{processed_dir:s}/{processed_fname:s}.pkl")
+            if 'csv' in processed_ftype.lower():
+                return pd.read_csv(f"{processed_dir:s}/{processed_fname:s}.csv")
+
+    print("reading processed dataframe...")
+    final  = generate_datafile(f'{data_dir:s}/raw', processed_dir, raw_fname)
 
     print("saving processed dataframe...")
     if 'pkl' in processed_ftype.lower():
-        df2pkl(final, f"{processed_dir:s}/processed_licor_data.pkl")
+        df2pkl(final, f"{processed_dir:s}/{processed_fname:s}.pkl")
     if 'csv' in processed_ftype.lower():
-        df2csv(final, f"{processed_dir:s}/processed_licor_data.csv")
+        df2csv(final, f"{processed_dir:s}/{processed_fname:s}.csv")
 
-def generate_datafile(raw_data_dir: str, output_data_dir: str):
+    return final
+
+def generate_datafile(raw_data_dir: str, output_data_dir: str, raw_fname: str) -> pd.DataFrame:
     raw_data_dir = verify_path_isdir(raw_data_dir)
 
     # to store files in a list
@@ -51,6 +73,7 @@ def generate_datafile(raw_data_dir: str, output_data_dir: str):
     ghg_file_list = glob.glob(f"{raw_data_dir:s}/*.ghg")
     pbar = tqdm(range(len(ghg_file_list)))
     cols = []
+    print("unzipping raw licor data...")
     for i in pbar:
         fname = unix_path(ghg_file_list[i])
         pbar.set_description(f"Processing {fname:s}")
@@ -60,7 +83,7 @@ def generate_datafile(raw_data_dir: str, output_data_dir: str):
                     if counter == 0:
                         zip_ref.extract(zf, f"{output_data_dir}")
                         base = os.path.basename(zf).split('.')[0]
-                        os.rename(f"{output_data_dir}/{base}.data", f"{output_data_dir}/{base}.csv")
+                        os.rename(f"{output_data_dir}/{base:s}.data", f"{output_data_dir}/{raw_fname:s}.csv")
                         counter+=1
                     with zip_ref.open(zf) as datafile:
                         tsv_string = datafile.read().decode("utf-8")
@@ -95,9 +118,10 @@ def generate_datafile(raw_data_dir: str, output_data_dir: str):
 
 if __name__ == "__main__":
 
+    from os.path import dirname, realpath
     import argparse
 
-    default_dir=verify_path_isdir(f"{os.path.dirname(os.path.realpath(__file__)):s}")
+    default_dir=verify_path_isdir(f"{dirname(realpath(__file__)):s}")
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-id','--input_dir', required=True, type=str,
@@ -107,5 +131,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     argdict = vars(args)
 
-    process_licor_data(argdict['input_dir'], argdict['output_dir'])
+    processed_data = process_licor_data(argdict['input_dir'], argdict['output_dir'])
+    processed_data.info()
 
