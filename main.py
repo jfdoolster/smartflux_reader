@@ -20,4 +20,4 @@ if __name__ == "__main__":
     pd.set_option('display.precision', 2)
     print("\nNumber of Samples:", len(processed_data))
     print("Column Names:", ', '.join([str(c) for c in processed_data.columns]), end="\n\n")
-    print(processed_data)
+    #print(processed_data)
