@@ -9,7 +9,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-id','--input_dir', required=True, type=str,
-        help='path to licor 7755 original data directory')
+        help='path to smartflux original data directory')
     parser.add_argument('-od', '--output_dir', default=default_dir, type=str,
         help='path to processed (output) data directory')
     args = parser.parse_args()
