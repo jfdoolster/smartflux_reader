@@ -1,3 +1,4 @@
 *.pkl
 *.csv
+text_colors.py
 __pycache__

@@ -34,7 +34,9 @@ def verify_path_isfile(_path) -> bool:
     print(f"INFO:\tfound processed data file ({_path:s})")
     return True
 
-def process_licor_data(data_dir: str, processed_dir: str, processed_ftype="pkl", processed_fname="processed_licor_data", raw_fname="raw_licor_data"):
+def process_smartflux_data(data_dir: str, processed_dir: str, processed_ftype="pkl", \
+                            processed_fname="processed_licor_data", \
+                                raw_fname="raw_licor_data"):
 
     if processed_ftype.lower() not in ['pkl', 'csv', '.pkl', '.csv']:
         print("ERROR:\tprocessed_file_type must be 'csv' or 'pkl'")
@@ -131,6 +133,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     argdict = vars(args)
 
-    processed_data = process_licor_data(argdict['input_dir'], argdict['output_dir'])
-    processed_data.info()
+    processed_data = process_smartflux_data(argdict['input_dir'], argdict['output_dir'])
+    pd.set_option('display.precision', 2)
+    print(processed_data.columns)
+    print(processed_data)
 

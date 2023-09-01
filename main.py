@@ -1,9 +1,10 @@
 if __name__ == "__main__":
 
-    from os.path import dirname, realpath
     import argparse
+    import pandas as pd
+    from os.path import dirname, realpath
 
-    from licor_reader import verify_path_isdir, process_licor_data
+    from smartflux_reader import verify_path_isdir, process_smartflux_data
 
     default_dir=verify_path_isdir(f"{dirname(realpath(__file__)):s}")
 
@@ -15,4 +16,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
     argdict = vars(args)
 
-    processed_data = process_licor_data(argdict['input_dir'], argdict['output_dir'])
+    processed_data = process_smartflux_data(argdict['input_dir'], argdict['output_dir'])
+    pd.set_option('display.precision', 2)
+    print("\nNumber of Samples:", len(processed_data))
+    print("Column Names:", ', '.join([str(c) for c in processed_data.columns]), end="\n\n")
+    print(processed_data)
