@@ -11,10 +11,10 @@ def verify_path_isdir(_path):
     _path = unix_path(_path)
     if not os.path.exists(_path):
         print(f"ERROR:\t{_path:s} does not exist")
-        sys.exit()
+        return False, _path
     if not os.path.isdir(_path):
         print(f"ERROR:\t{_path:s} is not a directory")
-        sys.exit()
+        return False, _path
 
     last = _path[-1]
     while last == '/':
@@ -37,6 +37,7 @@ def verify_path_isfile(_path) -> bool:
 def process_smartflux_data(data_dir: str, processed_dir: str, processed_ftype="pkl", \
                             processed_fname="processed_smartflux_data", \
                                 raw_fname="raw_smartflux_data"):
+
 
     if processed_ftype.lower() not in ['pkl', 'csv', '.pkl', '.csv']:
         print("ERROR:\tprocessed_file_type must be 'csv' or 'pkl'")
